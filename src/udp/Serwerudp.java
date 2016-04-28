@@ -1,3 +1,5 @@
+package udp;
+
 import java.io.*;
 import java.net.*;
 import java.util.logging.Level;
@@ -8,7 +10,6 @@ public class Serwerudp {
         byte sendbuff[];
         byte recbuff[];
         try {
-            // TODO code application logic here
             DatagramSocket gniazdoudp = new DatagramSocket(9876);
             while (true) {
                 recbuff = new byte[1024];

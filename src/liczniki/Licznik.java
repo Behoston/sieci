@@ -1,16 +1,24 @@
 package liczniki;
 
 
-public class Licznik {
-    private int i;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
-    public synchronized int zwieksz() {
+class Licznik {
+    private int i;
+    private Lock lock = new ReentrantLock();
+
+    int zwieksz() {
+        lock.lock();
         i++;
+        lock.unlock();
         return i;
     }
 
-    public synchronized int zmniejsz() {
+    int zmniejsz() {
+        lock.lock();
         i--;
+        lock.unlock();
         return i;
     }
 }

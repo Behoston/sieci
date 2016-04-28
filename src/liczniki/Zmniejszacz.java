@@ -1,11 +1,11 @@
 package liczniki;
 
 
-public class Zmniejszacz extends Thread {
+class Zmniejszacz extends Thread {
 
     private Licznik licznik;
 
-    public Zmniejszacz(Licznik licznik) {
+    Zmniejszacz(Licznik licznik) {
         this.licznik = licznik;
     }
 
@@ -15,7 +15,7 @@ public class Zmniejszacz extends Thread {
         while (true) {
             int wartosc = licznik.zmniejsz();
             System.out.println("Zmniejszacz: " + wartosc);
-            if (wartosc < -1000){
+            if (wartosc < -1000) {
                 try {
                     Thread.sleep(10);
                 } catch (InterruptedException e) {
