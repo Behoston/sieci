@@ -1,4 +1,4 @@
-package tcp;
+package tcp.server;
 
 import java.util.HashSet;
 import java.util.Set;

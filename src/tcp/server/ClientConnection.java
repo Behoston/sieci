@@ -1,4 +1,4 @@
-package tcp;
+package tcp.server;
 
 import java.io.BufferedReader;
 import java.io.DataOutputStream;
@@ -25,12 +25,13 @@ class ClientConnection extends Thread {
         System.out.println("Client connection started");
         System.out.println("Remote IP: " + connectionSocket.getInetAddress().getHostAddress());
         System.out.println("Client id: " + clientId.toString());
-        listener.start();
         try {
             DataOutputStream outToClient = new DataOutputStream(connectionSocket.getOutputStream());
             outToClient.writeBytes("Hello, your ID is: " + clientId + "; To send message please use 3 first chars to set target");
-        } catch (IOException ignored) {
+        } catch (IOException e) {
+            e.printStackTrace();
         }
+        listener.start();
         try {
             String clientSentence;
             while (true) {

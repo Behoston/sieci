@@ -1,4 +1,4 @@
-package tcp;
+package tcp.server;
 
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;

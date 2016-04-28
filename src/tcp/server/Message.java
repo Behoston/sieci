@@ -1,25 +1,25 @@
-package tcp;
+package tcp.server;
 
-public class Message {
+class Message {
     private Integer to;
     private Integer from;
     private String message;
 
-    public Message(Integer to, Integer from, String message) {
+    Message(Integer to, Integer from, String message) {
         this.to = to;
         this.from = from;
         this.message = message;
     }
 
-    public Integer getTo() {
+    Integer getTo() {
         return to;
     }
 
-    public Integer getFrom() {
+    Integer getFrom() {
         return from;
     }
 
-    public String getMessage() {
+    String getMessage() {
         return message;
     }
 }

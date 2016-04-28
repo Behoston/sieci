@@ -1,9 +1,11 @@
-package tcp;
+package tcp.server;
+
+import tcp.server.MessageSource;
 
 import java.io.DataOutputStream;
 import java.net.Socket;
 
-public class ServerListener extends Thread {
+class ServerListener extends Thread {
 
     private MessageSource messageSource;
     private Integer clientId;

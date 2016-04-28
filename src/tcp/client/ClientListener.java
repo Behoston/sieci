@@ -1,4 +1,4 @@
-package tcp;
+package tcp.client;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
@@ -18,6 +18,7 @@ class ClientListener extends Thread {
     public void run() {
         while (true) {
             try {
+                System.out.println("ggugghghg");
                 String response;
                 BufferedReader inFromServer = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
                 response = inFromServer.readLine();
@@ -26,7 +27,8 @@ class ClientListener extends Thread {
                     connected = Boolean.FALSE;
                     break;
                 }
-            } catch (Exception ignored) {
+            } catch (Exception e) {
+                e.printStackTrace();
             }
         }
     }
