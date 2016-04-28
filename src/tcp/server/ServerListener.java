@@ -1,7 +1,5 @@
 package tcp.server;
 
-import tcp.server.MessageSource;
-
 import java.io.DataOutputStream;
 import java.net.Socket;
 
@@ -24,7 +22,8 @@ class ServerListener extends Thread {
                 try {
                     DataOutputStream outToClient = new DataOutputStream(connectionSocket.getOutputStream());
                     if (messageSource.isMessageForMe(clientId)) {
-                        outToClient.writeBytes(messageSource.getMessage(clientId).getMessage());
+                        Message message = messageSource.getMessage(clientId);
+                        outToClient.writeBytes("[" + message.getFrom().toString() + "]" + message.getMessage());
                     }
                 } catch (Exception e) {
                     e.printStackTrace();

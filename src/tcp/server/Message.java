@@ -8,7 +8,7 @@ class Message {
     Message(Integer to, Integer from, String message) {
         this.to = to;
         this.from = from;
-        this.message = message;
+        this.message = message + '\n';
     }
 
     Integer getTo() {

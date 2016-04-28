@@ -27,7 +27,7 @@ class ClientConnection extends Thread {
         System.out.println("Client id: " + clientId.toString());
         try {
             DataOutputStream outToClient = new DataOutputStream(connectionSocket.getOutputStream());
-            outToClient.writeBytes("Hello, your ID is: " + clientId + "; To send message please use 3 first chars to set target");
+            outToClient.writeBytes("Hello, your ID is: " + clientId + "; To send message please use 3 first chars to set target\n");
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -41,11 +41,13 @@ class ClientConnection extends Thread {
                 System.out.println("###########################");
                 System.out.println("[" + clientId.toString() + "]Received: " + clientSentence);
                 if (clientSentence != null) {
-                    if (clientSentence.toUpperCase().equals("KONIEC\n")) {
-                        System.out.println("Koniec połączenia klienta o numerze" + this.clientId.toString());
+                    if (clientSentence.toUpperCase().equals("/KONIEC")) {
+                        messageSource.putMessage(new Message(this.clientId, this.clientId, "/KONIEC\n"));
+                        System.out.println("Koniec połączenia klienta o numerze: " + this.clientId.toString());
                         break;
                     }
                 }
+                assert clientSentence != null;
                 Integer to = Integer.parseInt(clientSentence.substring(0, 3));
                 String message = clientSentence.substring(3);
                 messageSource.putMessage(new Message(to, this.clientId, message));

@@ -34,6 +34,7 @@ class MessageSource {
                 return m;
             }
         }
+        lock.writeLock().unlock();
         return null;
     }
 

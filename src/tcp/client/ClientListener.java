@@ -18,12 +18,11 @@ class ClientListener extends Thread {
     public void run() {
         while (true) {
             try {
-                System.out.println("ggugghghg");
                 String response;
                 BufferedReader inFromServer = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
                 response = inFromServer.readLine();
-                System.out.println("FROM SERVER: " + response);
-                if (response.equals("KONIEC")) {
+                System.out.println(response);
+                if (response.equals("/KONIEC")) {
                     connected = Boolean.FALSE;
                     break;
                 }
