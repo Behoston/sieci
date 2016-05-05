@@ -8,7 +8,7 @@ class Czytelnia {
 
     synchronized void wejdz(Czytelnik czytelnik) {
         synchronized (monitor) {
-            if (pisarz) {
+            while (pisarz) {
                 try {
                     monitor.wait();
                 } catch (InterruptedException e) {
@@ -35,7 +35,7 @@ class Czytelnia {
 
     synchronized void wejdz(Pisarz pisarz) {
         synchronized (monitor) {
-            if (czytelnicy != 0 || this.pisarz.equals(Boolean.TRUE)) {
+            while (czytelnicy != 0 || this.pisarz.equals(Boolean.TRUE)) {
                 try {
                     monitor.wait();
                 } catch (InterruptedException e) {

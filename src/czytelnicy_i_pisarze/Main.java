@@ -4,8 +4,8 @@ public class Main {
 
 
     public static void main(String argv[]) {
-        int czytelnicy = 10;
-        int pisarze = 1;
+        int czytelnicy = 100;
+        int pisarze = 10;
         Czytelnia czytelnia = new Czytelnia();
         for (int i = 0; i < pisarze; i++) {
             new Pisarz(czytelnia, i).start();
