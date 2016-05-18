@@ -20,7 +20,7 @@ class TCPClient {
             request = inFromUser.readLine();
             outToServer.writeBytes(request + '\n');
             if (!listener.isConnected()) {
-                System.out.println("Połączenie zakończone\n");
+                System.out.println("Connection closed");
                 break;
             }
         }

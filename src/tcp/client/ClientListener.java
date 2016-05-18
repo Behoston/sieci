@@ -22,7 +22,7 @@ class ClientListener extends Thread {
                 BufferedReader inFromServer = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
                 response = inFromServer.readLine();
                 System.out.println(response);
-                if (response.equals("/KONIEC")) {
+                if (response.contains("/END")) {
                     connected = Boolean.FALSE;
                     break;
                 }
@@ -30,6 +30,7 @@ class ClientListener extends Thread {
                 e.printStackTrace();
             }
         }
+        System.out.println("<Press Enter>");
     }
 
     Boolean isConnected() {

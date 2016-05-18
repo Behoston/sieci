@@ -8,49 +8,57 @@ import java.net.Socket;
 
 class ClientConnection extends Thread {
     private Socket connectionSocket;
-    private Integer clientId;
-    private MessageSource messageSource;
-    private ServerListener listener;
+    private MessageRouter messageRouter;
 
-    ClientConnection(Socket connectionSocket, ClientIdSource clientIdSource, MessageSource messageSource) {
+    ClientConnection(Socket connectionSocket, MessageRouter messageRouter) {
         this.connectionSocket = connectionSocket;
-        this.clientId = clientIdSource.giveMeId();
-        this.messageSource = messageSource;
-        listener = new ServerListener(messageSource, clientId, connectionSocket);
+        this.messageRouter = messageRouter;
 
+    }
+
+
+    public void sendToMyClient(String message, String from, Boolean priv) {
+        String toClient = "";
+        if (priv) {
+            toClient += "*";
+        }
+        toClient += "[" + from + "]";
+        toClient += message;
+        toClient += "\n";
+        try {
+            DataOutputStream outToClient = new DataOutputStream(connectionSocket.getOutputStream());
+            outToClient.writeBytes(toClient);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     public void run() {
         System.out.println("##########################");
         System.out.println("Client connection started");
         System.out.println("Remote IP: " + connectionSocket.getInetAddress().getHostAddress());
-        System.out.println("Client id: " + clientId.toString());
         try {
             DataOutputStream outToClient = new DataOutputStream(connectionSocket.getOutputStream());
-            outToClient.writeBytes("Hello, your ID is: " + clientId + "; To send message please use 3 first chars to set target\n");
+            outToClient.writeBytes("Hello, your IP is: " + connectionSocket.getInetAddress().getHostAddress() + "\n" +
+                    "To send private message please use @IP@message to set target\n");
         } catch (IOException e) {
             e.printStackTrace();
         }
-        listener.start();
         try {
-            String clientSentence;
+            String message;
             while (true) {
                 BufferedReader inFromClient =
                         new BufferedReader(new InputStreamReader(connectionSocket.getInputStream()));
-                clientSentence = inFromClient.readLine();
+                message = inFromClient.readLine();
                 System.out.println("###########################");
-                System.out.println("[" + clientId.toString() + "]Received: " + clientSentence);
-                if (clientSentence != null) {
-                    if (clientSentence.toUpperCase().equals("/KONIEC")) {
-                        messageSource.putMessage(new Message(this.clientId, this.clientId, "/KONIEC\n"));
-                        System.out.println("Koniec połączenia klienta o numerze: " + this.clientId.toString());
+                System.out.println("[" + connectionSocket.getInetAddress().getHostAddress() + "]Received: " + message);
+                if (message != null) {
+                    messageRouter.routeMessage(message, connectionSocket.getInetAddress().getHostAddress());
+                    if (message.toUpperCase().contains("/END")) {
+                        System.out.println("[" + connectionSocket.getInetAddress().getHostAddress() + "]Connection closed");
                         break;
                     }
                 }
-                assert clientSentence != null;
-                Integer to = Integer.parseInt(clientSentence.substring(0, 3));
-                String message = clientSentence.substring(3);
-                messageSource.putMessage(new Message(to, this.clientId, message));
             }
             connectionSocket.close();
         } catch (Exception ignored) {
@@ -58,4 +66,7 @@ class ClientConnection extends Thread {
     }
 
 
+    public String getIp() {
+        return connectionSocket.getInetAddress().getHostAddress();
+    }
 }
