@@ -17,7 +17,7 @@ class ClientConnection extends Thread {
     }
 
 
-    public void sendToMyClient(String message, String from, Boolean priv) {
+    void sendToMyClient(String message, String from, Boolean priv) {
         String toClient = "";
         if (priv) {
             toClient += "*";
@@ -29,7 +29,11 @@ class ClientConnection extends Thread {
             DataOutputStream outToClient = new DataOutputStream(connectionSocket.getOutputStream());
             outToClient.writeBytes(toClient);
         } catch (IOException e) {
-            e.printStackTrace();
+            messageRouter.disconnectClient(this);
+            try {
+                connectionSocket.close();
+            } catch (IOException ignored) {
+            }
         }
     }
 
@@ -50,19 +54,23 @@ class ClientConnection extends Thread {
                 BufferedReader inFromClient =
                         new BufferedReader(new InputStreamReader(connectionSocket.getInputStream()));
                 message = inFromClient.readLine();
-                System.out.println("###########################");
-                System.out.println("[" + connectionSocket.getInetAddress().getHostAddress() + "]Received: " + message);
                 if (message != null) {
+                    System.out.println("###########################");
+                    System.out.println("[" + connectionSocket.getInetAddress().getHostAddress() + "]Received: " + message);
                     messageRouter.routeMessage(message, connectionSocket.getInetAddress().getHostAddress());
                     if (message.toUpperCase().contains("/END")) {
                         System.out.println("[" + connectionSocket.getInetAddress().getHostAddress() + "]Connection closed");
                         break;
                     }
+                } else {
+                    break;
                 }
             }
             connectionSocket.close();
         } catch (Exception ignored) {
         }
+        messageRouter.disconnectClient(this);
+
     }
 
 

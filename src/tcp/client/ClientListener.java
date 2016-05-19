@@ -18,16 +18,17 @@ class ClientListener extends Thread {
     public void run() {
         while (true) {
             try {
-                String response;
                 BufferedReader inFromServer = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
+                String response;
                 response = inFromServer.readLine();
-                System.out.println(response);
                 if (response.contains("/END")) {
                     connected = Boolean.FALSE;
                     break;
                 }
+                System.out.println(response);
             } catch (Exception e) {
-                e.printStackTrace();
+                connected = Boolean.FALSE;
+                break;
             }
         }
         System.out.println("<Press Enter>");
