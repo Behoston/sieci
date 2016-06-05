@@ -23,6 +23,4 @@ public interface Algorithm {
 
     void writeRequestToDataOutputStream(DataOutputStream dataOutputStream) throws IOException;
 
-    void writeResultToDataOutputStream(DataOutputStream dataOutputStream) throws IOException;
-
 }

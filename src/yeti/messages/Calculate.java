@@ -8,11 +8,10 @@ import java.io.IOException;
 
 public class Calculate implements Communicate {
     private final static Byte TYPE = 1;
-    private final Short id;
     private Algorithm algorithm;
 
-    public Calculate(Short id, Algorithm algorithm) {
-        this.id = id;
+    public Calculate(Algorithm algorithm) {
+
         this.algorithm = algorithm;
     }
 
@@ -29,13 +28,13 @@ public class Calculate implements Communicate {
     @Override
     public void writeToDataOutputStream(DataOutputStream dataOutputStream) throws IOException {
         dataOutputStream.writeByte(TYPE);
-        dataOutputStream.writeShort(id);
+        dataOutputStream.writeShort(algorithm.getId());
         algorithm.writeRequestToDataOutputStream(dataOutputStream);
     }
 
     @Override
     public short getId() {
-        return id;
+        return algorithm.getId();
     }
 
 

@@ -2,9 +2,11 @@ package yeti.server;
 
 import yeti.NotSupportedException;
 import yeti.algo.AlgorithmContext;
+import yeti.algo.results.ResultData;
 import yeti.messages.*;
 import yeti.utils.YetiInputStreamReader;
 
+import java.io.DataInputStream;
 import java.io.IOException;
 import java.net.Socket;
 
@@ -13,16 +15,22 @@ public class ClientConnection extends Thread {
     private Yeti yeti;
     private YetiInputStreamReader yetiInputStreamReader;
     private AlgorithmContext algorithmContext;
+    private DataInputStream dataInputStream;
 
     ClientConnection(Socket socket, Yeti yeti) {
         this.socket = socket;
         this.yeti = yeti;
         this.algorithmContext = new AlgorithmContext();
         try {
-            this.yetiInputStreamReader = new YetiInputStreamReader(socket.getInputStream(), this, algorithmContext);
+            this.dataInputStream = new DataInputStream(socket.getInputStream());
+            this.yetiInputStreamReader = new YetiInputStreamReader(this, algorithmContext);
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    public DataInputStream getDataInputStream() {
+        return dataInputStream;
     }
 
     public String getIp() {
@@ -55,6 +63,26 @@ public class ClientConnection extends Thread {
                 PositionAnswer answer = new PositionAnswer(positionQuestion.getId(), number);
             }
         }
+    }
 
+    public void sendResult(Short id, ResultData resultData) {
+        Result result = new Result(id, resultData);
+        result.writeToDataOutputStream();
+    }
+
+    public void sendPosition() {
+        // TODO: 05.06.16 implement
+    }
+
+    public void sendCancelled() {
+        // TODO: 05.06.16
+    }
+
+    public void sendOverload() {
+        // TODO: 05.06.16
+    }
+
+    public void sendError() {
+        // TODO: 05.06.16
     }
 }

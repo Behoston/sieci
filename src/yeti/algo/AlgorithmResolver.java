@@ -2,6 +2,10 @@ package yeti.algo;
 
 import javafx.util.Pair;
 import yeti.NotSupportedException;
+import yeti.algo.results.IsPrimeResultData;
+import yeti.algo.results.KnapsackResultData;
+import yeti.algo.results.ResultData;
+import yeti.algo.results.SumResultData;
 import yeti.server.ClientConnection;
 
 import java.io.DataInputStream;
@@ -46,22 +50,24 @@ public class AlgorithmResolver {
         }
     }
 
-    public static Object resolveResult(Byte algorithmID, Long dataLength, DataInputStream inputStream) throws NotSupportedException, IOException {
+    public static ResultData resolveResult(Byte algorithmID, Long dataLength, DataInputStream inputStream) throws NotSupportedException, IOException {
+        ResultData result;
         if (algorithmID == 1) {
             // Sum
-            return inputStream.readInt();
+            result = new SumResultData(inputStream.readInt());
         } else if (algorithmID == 2) {
             // Knapsack
-            List<Byte> result = new ArrayList<>();
+            List<Byte> data = new ArrayList<>();
             for (long i = 0; i == dataLength; i++) {
-                result.add(inputStream.readByte());
+                data.add(inputStream.readByte());
             }
-            return result;
+            result = new KnapsackResultData(data);
         } else if (algorithmID == 3) {
             // IsPrime
-            return inputStream.readInt();
+            result = new IsPrimeResultData(inputStream.readInt());
         } else {
             throw new NotSupportedException();
         }
+        return result;
     }
 }

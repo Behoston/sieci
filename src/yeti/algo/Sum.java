@@ -1,6 +1,7 @@
 package yeti.algo;
 
 import yeti.InvalidDataException;
+import yeti.algo.results.SumResultData;
 import yeti.server.ClientConnection;
 
 import java.io.DataOutputStream;
@@ -9,36 +10,43 @@ import java.util.List;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
+import static yeti.algo.State.*;
+
 public class Sum implements Algorithm {
 
     private final static short TYPE = 1;
 
     private Short id;
     private List<Integer> data;
-    private Integer result;
+    private SumResultData result;
     private ClientConnection clientConnection;
     private Boolean interrupted;
     private Lock lock = new ReentrantLock();
+    private State state;
 
     public Sum(Short id, List<Integer> data, ClientConnection clientConnection) {
         this.id = id;
         this.data = data;
         this.clientConnection = clientConnection;
         interrupted = false;
-
+        state = WAITING;
     }
 
     @Override
     public void run() throws InvalidDataException {
         lock.lock();
-        result = 0;
+        state = CALCULATING;
+        result = new SumResultData(0);
         for (Integer i : data) {
-            result += i;
+            result.add(i);
             if (interruptionCheck()) {
+                state = CANCELLED;
                 sendMessage();
-                break;
+                return;
             }
         }
+        state = DONE;
+        sendMessage();
     }
 
     @Override
@@ -61,15 +69,21 @@ public class Sum implements Algorithm {
         return interrupted;
     }
 
+    @Override
+    public void sendMessage() {
+        if (state == DONE) {
+            clientConnection.sendResult(id, result);
+        } else if (state == CANCELLED) {
+            clientConnection.sendCancelled();
+        } else {
+            clientConnection.sendError();
+        }
+    }
+
 
     private long getDataLength() {
         return data.size() * Integer.BYTES;
     }
-
-    private long getResultLength() {
-        return Integer.BYTES;
-    }
-
 
     @Override
     public short getType() {
@@ -85,10 +99,5 @@ public class Sum implements Algorithm {
         }
     }
 
-    @Override
-    public void writeResultToDataOutputStream(DataOutputStream dataOutputStream) throws IOException {
-        dataOutputStream.writeLong(getResultLength());
-        dataOutputStream.writeInt(result);
-    }
 
 }

@@ -1,11 +1,14 @@
 package yeti.algo;
 
 import javafx.util.Pair;
+import yeti.algo.results.KnapsackResultData;
 import yeti.server.ClientConnection;
 
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.util.List;
+
+import static yeti.algo.State.*;
 
 public class Knapsack implements Algorithm {
     private final static short TYPE = 2;
@@ -15,7 +18,8 @@ public class Knapsack implements Algorithm {
     private Integer end;
     private ClientConnection clientConnection;
     private Boolean interrupted;
-    private List<Byte> result;
+    private KnapsackResultData result;
+    private State state;
 
     public Knapsack(Short id, List<Pair<Integer, Integer>> data, Integer start, Integer end, ClientConnection clientConnection) {
         this.id = id;
@@ -24,6 +28,7 @@ public class Knapsack implements Algorithm {
         this.end = end;
         this.clientConnection = clientConnection;
         this.interrupted = false;
+        this.state = WAITING;
     }
 
 
@@ -47,15 +52,21 @@ public class Knapsack implements Algorithm {
         return interrupted;
     }
 
+    @Override
+    public void sendMessage() {
+        if (state == DONE) {
+            clientConnection.sendResult(id, result);
+        } else if (state == CANCELLED) {
+            clientConnection.sendCancelled();
+        } else {
+            clientConnection.sendError();
+        }
+    }
+
 
     private long getDataLength() {
         return (data.size() * 2 + 2) * Integer.BYTES;
     }
-
-    private long getResultLength() {
-        return result.size();
-    }
-
 
     @Override
     public short getType() {
@@ -74,12 +85,5 @@ public class Knapsack implements Algorithm {
         dataOutputStream.writeInt(end);
     }
 
-    @Override
-    public void writeResultToDataOutputStream(DataOutputStream dataOutputStream) throws IOException {
-        dataOutputStream.writeLong(getResultLength());
-        for (Byte b : result) {
-            dataOutputStream.writeByte(b);
-        }
-    }
 
 }

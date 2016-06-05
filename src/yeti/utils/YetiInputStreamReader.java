@@ -4,13 +4,13 @@ import yeti.NotSupportedException;
 import yeti.algo.Algorithm;
 import yeti.algo.AlgorithmContext;
 import yeti.algo.AlgorithmResolver;
+import yeti.algo.results.ResultData;
 import yeti.messages.*;
 import yeti.messages.Error;
 import yeti.server.ClientConnection;
 
 import java.io.DataInputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -21,9 +21,9 @@ public class YetiInputStreamReader {
     private AlgorithmContext context;
     private Lock lock;
 
-    public YetiInputStreamReader(InputStream inputStream, ClientConnection clientConnection, AlgorithmContext algorithmContext) {
-        this.inputStream = new DataInputStream(inputStream);
+    public YetiInputStreamReader(ClientConnection clientConnection, AlgorithmContext algorithmContext) {
         this.clientConnection = clientConnection;
+        this.inputStream = clientConnection.getDataInputStream();
         this.context = algorithmContext;
         this.lock = new ReentrantLock();
     }
@@ -70,7 +70,7 @@ public class YetiInputStreamReader {
         Short algorithmType = inputStream.readShort();
         Long length = inputStream.readLong();
         Algorithm algorithm = AlgorithmResolver.resolve(id, algorithmType, length, inputStream, clientConnection);
-        return new Calculate(id, algorithm);
+        return new Calculate(algorithm);
     }
 
     private Cancel readCancel() throws IOException {
@@ -87,8 +87,8 @@ public class YetiInputStreamReader {
         Short id = inputStream.readShort();
         Byte algorithmId = context.identify(id);
         Long length = inputStream.readLong();
-        Object data = AlgorithmResolver.resolveResult(algorithmId, length, inputStream);
-        return new Result(id, data);
+        ResultData resultData = AlgorithmResolver.resolveResult(algorithmId, length, inputStream);
+        return new Result(id, resultData);
     }
 
     private PositionAnswer readPositionAnswer() throws IOException {
