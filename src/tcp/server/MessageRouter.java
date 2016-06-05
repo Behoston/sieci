@@ -54,7 +54,7 @@ class MessageRouter {
         lock.readLock().unlock();
     }
 
-    public void disconnectClient(ClientConnection clientConnection) {
+    void disconnectClient(ClientConnection clientConnection) {
         lock.writeLock().lock();
         clients.remove(clientConnection);
         lock.writeLock().unlock();

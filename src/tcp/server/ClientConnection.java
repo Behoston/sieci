@@ -74,7 +74,7 @@ class ClientConnection extends Thread {
     }
 
 
-    public String getIp() {
+    String getIp() {
         return connectionSocket.getInetAddress().getHostAddress();
     }
 }
