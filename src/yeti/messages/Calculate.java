@@ -11,7 +11,6 @@ public class Calculate implements Communicate {
     private Algorithm algorithm;
 
     public Calculate(Algorithm algorithm) {
-
         this.algorithm = algorithm;
     }
 
@@ -28,7 +27,8 @@ public class Calculate implements Communicate {
     @Override
     public void writeToDataOutputStream(DataOutputStream dataOutputStream) throws IOException {
         dataOutputStream.writeByte(TYPE);
-        dataOutputStream.writeShort(algorithm.getId());
+        dataOutputStream.writeShort(getId());
+        dataOutputStream.writeInt(getPackageId());
         algorithm.writeRequestToDataOutputStream(dataOutputStream);
     }
 
@@ -37,5 +37,8 @@ public class Calculate implements Communicate {
         return algorithm.getId();
     }
 
+    public int getPackageId() {
+        return algorithm.getPackageId();
+    }
 
 }

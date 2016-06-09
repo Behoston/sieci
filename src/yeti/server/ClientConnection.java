@@ -7,6 +7,7 @@ import yeti.messages.*;
 import yeti.utils.YetiInputStreamReader;
 
 import java.io.DataInputStream;
+import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.Socket;
 
@@ -16,6 +17,7 @@ public class ClientConnection extends Thread {
     private YetiInputStreamReader yetiInputStreamReader;
     private AlgorithmContext algorithmContext;
     private DataInputStream dataInputStream;
+    private ClientOutput clientOutput;
 
     ClientConnection(Socket socket, Yeti yeti) {
         this.socket = socket;
@@ -27,6 +29,7 @@ public class ClientConnection extends Thread {
         } catch (IOException e) {
             e.printStackTrace();
         }
+        this.clientOutput = new ClientOutput(socket);
     }
 
     public DataInputStream getDataInputStream() {
@@ -51,6 +54,7 @@ public class ClientConnection extends Thread {
             if (communicate.getType() == 1) {
                 // Calculate
                 Calculate calculate = (Calculate) communicate;
+                algorithmContext.addAlgorithm(calculate.getId(), calculate.getType());
                 yeti.calculate(calculate.getAlgorithm());
             } else if (communicate.getType() == 11) {
                 // Cancel
@@ -59,30 +63,14 @@ public class ClientConnection extends Thread {
             } else if (communicate.getType() == 21) {
                 // PositionQuestion
                 PositionQuestion positionQuestion = (PositionQuestion) communicate;
-                Integer number = yeti.getPosition(positionQuestion.getId(), getIp());
-                PositionAnswer answer = new PositionAnswer(positionQuestion.getId(), number);
+                PositionAnswer positionAnswer = yeti.getPosition(positionQuestion.getId(), getIp());
+
             }
         }
     }
 
-    public void sendResult(Short id, ResultData resultData) {
-        Result result = new Result(id, resultData);
-        result.writeToDataOutputStream();
-    }
 
-    public void sendPosition() {
-        // TODO: 05.06.16 implement
-    }
-
-    public void sendCancelled() {
-        // TODO: 05.06.16
-    }
-
-    public void sendOverload() {
-        // TODO: 05.06.16
-    }
-
-    public void sendError() {
-        // TODO: 05.06.16
+    public ClientOutput getClientOutput() {
+        return clientOutput;
     }
 }

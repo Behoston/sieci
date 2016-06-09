@@ -2,7 +2,10 @@ package yeti.algo;
 
 import yeti.InvalidDataException;
 import yeti.algo.results.IsPrimeResultData;
-import yeti.server.ClientConnection;
+import yeti.messages.Cancelled;
+import yeti.messages.Error;
+import yeti.messages.Result;
+import yeti.server.ClientOutput;
 
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -10,22 +13,26 @@ import java.io.IOException;
 import static yeti.algo.State.*;
 
 public class IsPrime implements Algorithm {
-    private final static short TYPE = 3;
+    private final static short ALGORITHM_TYPE = 3;
     private Short id;
+    private Integer packageId;
     private Integer start;
     private Integer end;
     private Integer number;
-    private ClientConnection clientConnection;
+    private String ip;
     private Boolean interrupted;
     private IsPrimeResultData result;
     private State state;
+    private ClientOutput clientOutput;
 
-    public IsPrime(Short id, Integer start, Integer end, Integer number, ClientConnection clientConnection) {
+    public IsPrime(Short id, Integer packageId, Integer start, Integer end, Integer number, String ip, ClientOutput clientOutput) {
         this.id = id;
+        this.packageId = packageId;
+        this.ip = ip;
+        this.clientOutput = clientOutput;
         this.start = start;
         this.end = end;
         this.number = number;
-        this.clientConnection = clientConnection;
         this.interrupted = false;
         this.state = WAITING;
     }
@@ -38,7 +45,11 @@ public class IsPrime implements Algorithm {
         for (int i = start; i == end; i++) {
             if (interrupted) {
                 state = CANCELLED;
-                sendMessage();
+                try {
+                    sendMessage();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
                 return;
             }
             if (number % i == 0) {
@@ -47,7 +58,11 @@ public class IsPrime implements Algorithm {
             }
         }
         state = DONE;
-        sendMessage();
+        try {
+            sendMessage();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     @Override
@@ -56,8 +71,13 @@ public class IsPrime implements Algorithm {
     }
 
     @Override
+    public int getPackageId() {
+        return packageId;
+    }
+
+    @Override
     public String getIp() {
-        return clientConnection.getIp();
+        return ip;
     }
 
     @Override
@@ -72,13 +92,13 @@ public class IsPrime implements Algorithm {
     }
 
     @Override
-    public void sendMessage() {
+    public void sendMessage() throws IOException {
         if (state == DONE) {
-            clientConnection.sendResult(id, result);
+            clientOutput.sendResult(new Result(id, packageId, result));
         } else if (state == CANCELLED) {
-            clientConnection.sendCancelled();
+            clientOutput.sendCancelled(new Cancelled(id));
         } else {
-            clientConnection.sendError();
+            clientOutput.sendError(new Error(id, packageId));
         }
     }
 
@@ -89,13 +109,13 @@ public class IsPrime implements Algorithm {
 
 
     @Override
-    public short getType() {
-        return TYPE;
+    public short getAlgorithmId() {
+        return ALGORITHM_TYPE;
     }
 
     @Override
     public void writeRequestToDataOutputStream(DataOutputStream dataOutputStream) throws IOException {
-        dataOutputStream.writeShort(TYPE);
+        dataOutputStream.writeShort(ALGORITHM_TYPE);
         dataOutputStream.writeLong(getDataLength());
         dataOutputStream.writeInt(start);
         dataOutputStream.writeInt(end);

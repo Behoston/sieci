@@ -9,10 +9,12 @@ public class Result implements Communicate {
 
     private static final byte TYPE = 51;
     private final Short id;
+    private final Integer packageId;
     private final ResultData resultData;
 
-    public Result(Short id, ResultData resultData) {
+    public Result(Short id, Integer packageId, ResultData resultData) {
         this.id = id;
+        this.packageId = packageId;
         this.resultData = resultData;
     }
 
@@ -22,6 +24,10 @@ public class Result implements Communicate {
         return id;
     }
 
+    public int getPackageId() {
+        return packageId;
+    }
+
     @Override
     public byte getType() {
         return TYPE;
@@ -29,8 +35,9 @@ public class Result implements Communicate {
 
     @Override
     public void writeToDataOutputStream(DataOutputStream dataOutputStream) throws IOException {
-        dataOutputStream.writeByte(TYPE);
-        dataOutputStream.writeShort(id);
+        dataOutputStream.writeByte(getType());
+        dataOutputStream.writeShort(getId());
+        dataOutputStream.writeInt(getPackageId());
         resultData.writeResultToDataOutputStream(dataOutputStream);
     }
 

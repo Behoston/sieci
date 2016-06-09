@@ -2,7 +2,10 @@ package yeti.algo;
 
 import yeti.InvalidDataException;
 import yeti.algo.results.SumResultData;
-import yeti.server.ClientConnection;
+import yeti.messages.Cancelled;
+import yeti.messages.Error;
+import yeti.messages.Result;
+import yeti.server.ClientOutput;
 
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -14,20 +17,24 @@ import static yeti.algo.State.*;
 
 public class Sum implements Algorithm {
 
-    private final static short TYPE = 1;
+    private final static short ALGORITHM_NUMBER = 1;
 
     private Short id;
     private List<Integer> data;
     private SumResultData result;
-    private ClientConnection clientConnection;
+    private String ip;
     private Boolean interrupted;
     private Lock lock = new ReentrantLock();
     private State state;
+    private Integer packageId;
+    private ClientOutput clientOutput;
 
-    public Sum(Short id, List<Integer> data, ClientConnection clientConnection) {
+    public Sum(Short id, Integer packageId, List<Integer> data, String ip, ClientOutput clientOutput) {
         this.id = id;
+        this.packageId = packageId;
+        this.ip = ip;
+        this.clientOutput = clientOutput;
         this.data = data;
-        this.clientConnection = clientConnection;
         interrupted = false;
         state = WAITING;
     }
@@ -41,12 +48,20 @@ public class Sum implements Algorithm {
             result.add(i);
             if (interruptionCheck()) {
                 state = CANCELLED;
-                sendMessage();
+                try {
+                    sendMessage();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
                 return;
             }
         }
         state = DONE;
-        sendMessage();
+        try {
+            sendMessage();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     @Override
@@ -55,8 +70,13 @@ public class Sum implements Algorithm {
     }
 
     @Override
+    public int getPackageId() {
+        return packageId;
+    }
+
+    @Override
     public String getIp() {
-        return clientConnection.getIp();
+        return ip;
     }
 
     @Override
@@ -70,13 +90,13 @@ public class Sum implements Algorithm {
     }
 
     @Override
-    public void sendMessage() {
+    public void sendMessage() throws IOException {
         if (state == DONE) {
-            clientConnection.sendResult(id, result);
+            clientOutput.sendResult(new Result(id, packageId, result));
         } else if (state == CANCELLED) {
-            clientConnection.sendCancelled();
+            clientOutput.sendCancelled(new Cancelled(id));
         } else {
-            clientConnection.sendError();
+            clientOutput.sendError(new Error(id, packageId));
         }
     }
 
@@ -86,13 +106,13 @@ public class Sum implements Algorithm {
     }
 
     @Override
-    public short getType() {
-        return TYPE;
+    public short getAlgorithmId() {
+        return ALGORITHM_NUMBER;
     }
 
     @Override
     public void writeRequestToDataOutputStream(DataOutputStream dataOutputStream) throws IOException {
-        dataOutputStream.writeShort(TYPE);
+        dataOutputStream.writeShort(ALGORITHM_NUMBER);
         dataOutputStream.writeLong(getDataLength());
         for (Integer i : data) {
             dataOutputStream.writeInt(i);

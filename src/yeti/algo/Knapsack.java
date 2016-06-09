@@ -1,8 +1,12 @@
 package yeti.algo;
 
 import javafx.util.Pair;
+import yeti.InvalidDataException;
 import yeti.algo.results.KnapsackResultData;
-import yeti.server.ClientConnection;
+import yeti.messages.Cancelled;
+import yeti.messages.Error;
+import yeti.messages.Result;
+import yeti.server.ClientOutput;
 
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -11,26 +15,39 @@ import java.util.List;
 import static yeti.algo.State.*;
 
 public class Knapsack implements Algorithm {
-    private final static short TYPE = 2;
+    private final static short ALGORITHM_NUMBER = 2;
     private Short id;
-    private List<Pair<Integer, Integer>> data;
-    private Integer start;
-    private Integer end;
-    private ClientConnection clientConnection;
+    private Integer packageId;
+    private String ip;
+    private List<Pair<Integer, Integer>> objects;
+    private Integer capacity;
+    private ClientOutput clientOutput;
     private Boolean interrupted;
     private KnapsackResultData result;
     private State state;
 
-    public Knapsack(Short id, List<Pair<Integer, Integer>> data, Integer start, Integer end, ClientConnection clientConnection) {
+    public Knapsack(Short id, Integer packageId, String ip, List<Pair<Integer, Integer>> objects, Integer capacity,
+                    ClientOutput clientOutput) {
         this.id = id;
-        this.data = data;
-        this.start = start;
-        this.end = end;
-        this.clientConnection = clientConnection;
+        this.packageId = packageId;
+        this.ip = ip;
+        this.objects = objects;
+        this.capacity = capacity;
+        this.clientOutput = clientOutput;
         this.interrupted = false;
         this.state = WAITING;
     }
 
+
+    @Override
+    public void run() throws InvalidDataException {
+        // TODO: 09.06.16 implement
+        try {
+            sendMessage();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
 
     @Override
     public short getId() {
@@ -38,8 +55,13 @@ public class Knapsack implements Algorithm {
     }
 
     @Override
+    public int getPackageId() {
+        return packageId;
+    }
+
+    @Override
     public String getIp() {
-        return clientConnection.getIp();
+        return ip;
     }
 
     @Override
@@ -53,36 +75,35 @@ public class Knapsack implements Algorithm {
     }
 
     @Override
-    public void sendMessage() {
+    public void sendMessage() throws IOException {
         if (state == DONE) {
-            clientConnection.sendResult(id, result);
+            clientOutput.sendResult(new Result(id, packageId, result));
         } else if (state == CANCELLED) {
-            clientConnection.sendCancelled();
+            clientOutput.sendCancelled(new Cancelled(id));
         } else {
-            clientConnection.sendError();
+            clientOutput.sendError(new Error(id, packageId));
         }
     }
 
 
     private long getDataLength() {
-        return (data.size() * 2 + 2) * Integer.BYTES;
+        return (objects.size() * 2 + 2) * Integer.BYTES;
     }
 
     @Override
-    public short getType() {
-        return TYPE;
+    public short getAlgorithmId() {
+        return ALGORITHM_NUMBER;
     }
 
     @Override
     public void writeRequestToDataOutputStream(DataOutputStream dataOutputStream) throws IOException {
-        dataOutputStream.writeShort(TYPE);
+        dataOutputStream.writeShort(ALGORITHM_NUMBER);
         dataOutputStream.writeLong(getDataLength());
-        for (Pair<Integer, Integer> p : data) {
+        for (Pair<Integer, Integer> p : objects) {
             dataOutputStream.writeInt(p.getValue());
             dataOutputStream.writeInt(p.getKey());
         }
-        dataOutputStream.writeInt(start);
-        dataOutputStream.writeInt(end);
+        dataOutputStream.writeInt(capacity);
     }
 
 

@@ -11,15 +11,17 @@ public interface Algorithm {
 
     short getId();
 
+    int getPackageId();
+
     String getIp();
 
     void interrupt();
 
     boolean interruptionCheck();
 
-    void sendMessage();
+    void sendMessage() throws IOException;
 
-    short getType();
+    short getAlgorithmId();
 
     void writeRequestToDataOutputStream(DataOutputStream dataOutputStream) throws IOException;
 

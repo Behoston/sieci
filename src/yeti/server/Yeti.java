@@ -2,6 +2,7 @@ package yeti.server;
 
 import yeti.InvalidDataException;
 import yeti.algo.Algorithm;
+import yeti.messages.PositionAnswer;
 
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
@@ -13,49 +14,52 @@ public class Yeti extends Thread {
     private Algorithm actual;
     private ReadWriteLock lock = new ReentrantReadWriteLock();
 
-    public void calculate(Algorithm algorithm) {
+    public Yeti() {
         queue = new ConcurrentLinkedQueue<>();
+    }
+
+    public void calculate(Algorithm algorithm) {
         lock.writeLock().lock();
         queue.add(algorithm);
         lock.writeLock().unlock();
-        queue.notify();
     }
 
     public void cancel(short id, String ip) {
         lock.writeLock().lock();
+        Queue<Algorithm> newQueue = new ConcurrentLinkedQueue<>();
+        for (Algorithm a : queue) {
+            if (a.getIp().equals(ip) && a.getId() == id) {
+                a.interrupt();
+            } else {
+                newQueue.add(a);
+            }
+        }
+        this.queue = newQueue;
+        lock.writeLock().unlock();
         if (ip.equals(actual.getIp()) && actual.getId() == id) {
             lock.writeLock().unlock();
             actual.interrupt();
-        } else {
-            Queue<Algorithm> newQueue = new ConcurrentLinkedQueue<>();
-            for (Algorithm a : queue) {
-                if (a.getIp().equals(ip) && a.getId() == id) {
-                    a.interrupt();
-                } else {
-                    newQueue.add(a);
-                }
-            }
-            this.queue = newQueue;
-            lock.writeLock().unlock();
         }
     }
 
-    public int getPosition(int id, String ip) {
-        int position = 1;
+    public PositionAnswer getPosition(short id, String ip) {
+        int position = 0;
+        int length = 0;
+        int tmpPosition = 0;
         lock.readLock().lock();
         if (ip.equals(actual.getIp()) && actual.getId() == id) {
-            lock.readLock().unlock();
-            return position;
+            position = 0;
+            length = 1;
         }
         for (Algorithm a : queue) {
-            position++;
-            if (ip.equals(actual.getIp()) && a.getId() == id) {
-                lock.readLock().unlock();
-                return position;
+            tmpPosition++;
+            if (ip.equals(a.getIp()) && a.getId() == id) {
+                length += 1;
+                position = tmpPosition;
             }
         }
         lock.readLock().unlock();
-        return -1;
+        return new PositionAnswer(id, length, position);
     }
 
     @Override
@@ -63,10 +67,12 @@ public class Yeti extends Thread {
         while (true) {
             try {
                 lock.writeLock().lock();
-                actual = queue.poll();
+                if (!queue.isEmpty()) {
+                    actual = queue.poll();
+                }
                 lock.writeLock().unlock();
                 if (actual == null) {
-                    queue.wait();
+                    Thread.sleep(1000);
                 } else {
                     actual.run();
                 }

@@ -9,7 +9,8 @@ public class Server {
     public static void main(String argv[]) throws Exception {
         Yeti yeti = new Yeti();
         yeti.start();
-        ServerSocket welcomeSocket = new ServerSocket(850);
+        ServerSocket welcomeSocket = new ServerSocket(6454);
+
         //noinspection InfiniteLoopStatement
         while (true) {
             Socket connectionSocket = welcomeSocket.accept();

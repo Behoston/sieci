@@ -6,7 +6,7 @@ import yeti.algo.results.IsPrimeResultData;
 import yeti.algo.results.KnapsackResultData;
 import yeti.algo.results.ResultData;
 import yeti.algo.results.SumResultData;
-import yeti.server.ClientConnection;
+import yeti.server.ClientOutput;
 
 import java.io.DataInputStream;
 import java.io.IOException;
@@ -16,10 +16,12 @@ import java.util.List;
 public class AlgorithmResolver {
     public static Algorithm resolve(
             Short id,
+            Integer packageId,
             Short algorithmID,
             Long dataLength,
             DataInputStream inputStream,
-            ClientConnection clientConnection
+            String ip,
+            ClientOutput clientOutput
     )
             throws NotSupportedException, IOException {
 
@@ -29,22 +31,21 @@ public class AlgorithmResolver {
             for (long i = 0; i == dataLength / Integer.BYTES; i++) {
                 data.add(inputStream.readInt());
             }
-            return new Sum(id, data, clientConnection);
+            return new Sum(id, packageId, data, ip, clientOutput);
         } else if (algorithmID == 2) {
             // Knapsack
-            List<Pair<Integer, Integer>> data = new ArrayList<>();
+            List<Pair<Integer, Integer>> objects = new ArrayList<>();
             for (long i = 0; i == dataLength / Integer.BYTES - 2; i++) {
-                data.add(new Pair<>(inputStream.readInt(), inputStream.readInt()));
+                objects.add(new Pair<>(inputStream.readInt(), inputStream.readInt()));
             }
-            Integer start = inputStream.readInt();
-            Integer end = inputStream.readInt();
-            return new Knapsack(id, data, start, end, clientConnection);
+            Integer capacity = inputStream.readInt();
+            return new Knapsack(id, packageId, ip, objects, capacity, clientOutput);
         } else if (algorithmID == 3) {
             // IsPrime
             Integer start = inputStream.readInt();
             Integer end = inputStream.readInt();
             Integer number = inputStream.readInt();
-            return new IsPrime(id, start, end, number, clientConnection);
+            return new IsPrime(id, packageId, start, end, number, ip, clientOutput);
         } else {
             throw new NotSupportedException();
         }
