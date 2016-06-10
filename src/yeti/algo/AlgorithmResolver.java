@@ -28,14 +28,14 @@ public class AlgorithmResolver {
         if (algorithmID == 1) {
             // Sum
             List<Integer> data = new ArrayList<>();
-            for (long i = 0; i == dataLength / Integer.BYTES; i++) {
+            for (long i = 0; i != dataLength / Integer.BYTES; i++) {
                 data.add(inputStream.readInt());
             }
             return new Sum(id, packageId, data, ip, clientOutput);
         } else if (algorithmID == 2) {
             // Knapsack
             List<Pair<Integer, Integer>> objects = new ArrayList<>();
-            for (long i = 0; i == dataLength / Integer.BYTES - 2; i++) {
+            for (long i = 0; i != ((dataLength / Integer.BYTES - 1) / 2); i++) {
                 objects.add(new Pair<>(inputStream.readInt(), inputStream.readInt()));
             }
             Integer capacity = inputStream.readInt();
@@ -51,18 +51,15 @@ public class AlgorithmResolver {
         }
     }
 
-    public static ResultData resolveResult(Byte algorithmID, Long dataLength, DataInputStream inputStream) throws NotSupportedException, IOException {
+    public static ResultData resolveResult(Short algorithmID, Long dataLength, DataInputStream inputStream)
+            throws NotSupportedException, IOException {
         ResultData result;
         if (algorithmID == 1) {
             // Sum
-            result = new SumResultData(inputStream.readInt());
+            result = new SumResultData(inputStream.readLong());
         } else if (algorithmID == 2) {
             // Knapsack
-            List<Byte> data = new ArrayList<>();
-            for (long i = 0; i == dataLength; i++) {
-                data.add(inputStream.readByte());
-            }
-            result = new KnapsackResultData(data);
+            result = new KnapsackResultData(inputStream.readLong());
         } else if (algorithmID == 3) {
             // IsPrime
             result = new IsPrimeResultData(inputStream.readInt());

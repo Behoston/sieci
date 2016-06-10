@@ -1,6 +1,5 @@
 package yeti.algo;
 
-import yeti.InvalidDataException;
 import yeti.algo.results.SumResultData;
 import yeti.messages.Cancelled;
 import yeti.messages.Error;
@@ -29,6 +28,10 @@ public class Sum implements Algorithm {
     private Integer packageId;
     private ClientOutput clientOutput;
 
+    /**
+     * @param ip           only required on server side
+     * @param clientOutput only required on server side
+     */
     public Sum(Short id, Integer packageId, List<Integer> data, String ip, ClientOutput clientOutput) {
         this.id = id;
         this.packageId = packageId;
@@ -40,12 +43,22 @@ public class Sum implements Algorithm {
     }
 
     @Override
-    public void run() throws InvalidDataException {
+    public void run() {
         lock.lock();
         state = CALCULATING;
-        result = new SumResultData(0);
+        result = new SumResultData(0L);
         for (Integer i : data) {
-            result.add(i);
+            boolean in_limit = result.add(i);
+            if (!in_limit) {
+                state = ERROR;
+                try {
+                    sendMessage();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+                lock.unlock();
+                return;
+            }
             if (interruptionCheck()) {
                 state = CANCELLED;
                 try {
@@ -53,6 +66,7 @@ public class Sum implements Algorithm {
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
+                lock.unlock();
                 return;
             }
         }
@@ -62,6 +76,7 @@ public class Sum implements Algorithm {
         } catch (IOException e) {
             e.printStackTrace();
         }
+        lock.unlock();
     }
 
     @Override

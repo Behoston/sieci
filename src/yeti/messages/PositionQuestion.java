@@ -27,4 +27,10 @@ public class PositionQuestion implements Communicate {
         dataOutputStream.writeShort(id);
     }
 
+    @Override
+    public String toString() {
+        return "PositionQuestion{" +
+                "id=" + id +
+                '}';
+    }
 }

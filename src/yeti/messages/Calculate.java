@@ -41,4 +41,10 @@ public class Calculate implements Communicate {
         return algorithm.getPackageId();
     }
 
+    @Override
+    public String toString() {
+        return "Calculate{" +
+                "algorithm=" + algorithm +
+                '}';
+    }
 }

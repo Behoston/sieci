@@ -27,4 +27,10 @@ public class Cancel implements Communicate {
         dataOutputStream.writeShort(id);
     }
 
+    @Override
+    public String toString() {
+        return "Cancel{" +
+                "id=" + id +
+                '}';
+    }
 }

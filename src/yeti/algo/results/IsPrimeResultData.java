@@ -18,6 +18,12 @@ public class IsPrimeResultData implements ResultData {
     public void writeResultToDataOutputStream(DataOutputStream dataOutputStream) throws IOException {
         dataOutputStream.writeLong(Integer.BYTES);
         dataOutputStream.writeInt(result);
+    }
 
+    @Override
+    public String toString() {
+        return "IsPrimeResultData{" +
+                "result=" + result +
+                '}';
     }
 }

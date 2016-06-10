@@ -1,7 +1,6 @@
 package yeti.algo;
 
 import javafx.util.Pair;
-import yeti.InvalidDataException;
 import yeti.algo.results.KnapsackResultData;
 import yeti.messages.Cancelled;
 import yeti.messages.Error;
@@ -26,6 +25,10 @@ public class Knapsack implements Algorithm {
     private KnapsackResultData result;
     private State state;
 
+    /**
+     * @param ip           only required on server side
+     * @param clientOutput only required on server side
+     */
     public Knapsack(Short id, Integer packageId, String ip, List<Pair<Integer, Integer>> objects, Integer capacity,
                     ClientOutput clientOutput) {
         this.id = id;
@@ -40,13 +43,67 @@ public class Knapsack implements Algorithm {
 
 
     @Override
-    public void run() throws InvalidDataException {
-        // TODO: 09.06.16 implement
+    public void run() {
+        result = new KnapsackResultData(0L);
+        state = CALCULATING;
+        Long combination_number = 0L;
+        int dataLength = objects.size();
+        Long last_combination_number = (long) Math.pow(2, dataLength) - 1;
+        Boolean[] combination;
+        for (; combination_number <= last_combination_number; combination_number++) {
+            if (interruptionCheck()) {
+                state = CANCELLED;
+                try {
+                    sendMessage();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+                return;
+            }
+
+            combination = convertToBinary(combination_number);
+            long actualCapacity = 0;
+            long actualValue = 0;
+            for (int i = 0; i != dataLength; i++) {
+                if (combination[i]) {
+                    Pair<Integer, Integer> item = objects.get(i);
+                    Integer capacity = item.getKey();
+                    Integer value = item.getValue();
+                    if (actualCapacity + capacity > this.capacity) {
+                        // kiedy plecak będzie zbyt przepełniony to nie ma sensu liczyć dalej
+                        break;
+                    } else {
+                        // jeśli się zmieści
+                        actualValue += value;
+                        actualCapacity += capacity;
+                        if (actualValue > result.get()) {
+                            // jak jest większa wartość to zapisać
+                            result.set(actualValue);
+                        }
+                    }
+                }
+            }
+        }
+        state = DONE;
         try {
             sendMessage();
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    private Boolean[] convertToBinary(long i) {
+        Boolean[] result = new Boolean[objects.size()];
+        int position = 0;
+        while (i != 0) {
+            result[position] = (i % 2) == 1;
+            i /= 2;
+            position++;
+        }
+        for (; position != result.length; position++) {
+            result[position] = false;
+        }
+        return result;
     }
 
     @Override
@@ -87,7 +144,7 @@ public class Knapsack implements Algorithm {
 
 
     private long getDataLength() {
-        return (objects.size() * 2 + 2) * Integer.BYTES;
+        return (objects.size() * 2 + 1) * Integer.BYTES;
     }
 
     @Override
@@ -100,11 +157,22 @@ public class Knapsack implements Algorithm {
         dataOutputStream.writeShort(ALGORITHM_NUMBER);
         dataOutputStream.writeLong(getDataLength());
         for (Pair<Integer, Integer> p : objects) {
-            dataOutputStream.writeInt(p.getValue());
             dataOutputStream.writeInt(p.getKey());
+            dataOutputStream.writeInt(p.getValue());
         }
         dataOutputStream.writeInt(capacity);
     }
 
-
+    @Override
+    public String toString() {
+        return "Knapsack{" +
+                "id=" + id +
+                ", packageId=" + packageId +
+                ", ip='" + ip + '\'' +
+                ", capacity=" + capacity +
+                ", interrupted=" + interrupted +
+                ", result=" + result +
+                ", state=" + state +
+                '}';
+    }
 }

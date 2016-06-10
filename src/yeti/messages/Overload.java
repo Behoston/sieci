@@ -34,4 +34,11 @@ public class Overload implements Communicate {
         dataOutputStream.writeInt(packageId);
     }
 
+    @Override
+    public String toString() {
+        return "Overload{" +
+                "id=" + id +
+                ", packageId=" + packageId +
+                '}';
+    }
 }

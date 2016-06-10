@@ -37,4 +37,12 @@ public class PositionAnswer implements Communicate {
         dataOutputStream.writeInt(position);
     }
 
+    @Override
+    public String toString() {
+        return "PositionAnswer{" +
+                "id=" + id +
+                ", length=" + length +
+                ", position=" + position +
+                '}';
+    }
 }

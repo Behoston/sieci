@@ -7,7 +7,7 @@ import java.io.IOException;
 
 public interface Algorithm {
 
-    void run() throws InvalidDataException;
+    void run();
 
     short getId();
 
@@ -24,5 +24,8 @@ public interface Algorithm {
     short getAlgorithmId();
 
     void writeRequestToDataOutputStream(DataOutputStream dataOutputStream) throws IOException;
+
+    @Override
+    String toString();
 
 }

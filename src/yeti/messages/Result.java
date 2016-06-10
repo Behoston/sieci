@@ -41,4 +41,12 @@ public class Result implements Communicate {
         resultData.writeResultToDataOutputStream(dataOutputStream);
     }
 
+    @Override
+    public String toString() {
+        return "Result{" +
+                "id=" + id +
+                ", packageId=" + packageId +
+                ", resultData=" + resultData +
+                '}';
+    }
 }

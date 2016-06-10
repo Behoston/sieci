@@ -2,20 +2,32 @@ package yeti.algo.results;
 
 import java.io.DataOutputStream;
 import java.io.IOException;
-import java.util.List;
 
 public class KnapsackResultData implements ResultData {
-    private List<Byte> result;
+    private Long result;
 
-    public KnapsackResultData(List<Byte> data) {
-        result = data;
+    public KnapsackResultData(Long result) {
+        this.result = result;
     }
 
     @Override
     public void writeResultToDataOutputStream(DataOutputStream dataOutputStream) throws IOException {
-        dataOutputStream.writeLong(result.size() * Byte.BYTES);
-        for (Byte b : result) {
-            dataOutputStream.writeByte(b);
-        }
+        dataOutputStream.writeLong(Integer.BYTES);
+        dataOutputStream.writeLong(result);
+    }
+
+    public void set(long value) {
+        result = value;
+    }
+
+    @Override
+    public String toString() {
+        return "KnapsackResultData{" +
+                "result=" + result +
+                '}';
+    }
+
+    public long get() {
+        return result;
     }
 }

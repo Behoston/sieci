@@ -12,4 +12,7 @@ public interface Communicate {
 
     void writeToDataOutputStream(DataOutputStream dataOutputStream) throws IOException;
 
+    @Override
+    String toString();
+
 }

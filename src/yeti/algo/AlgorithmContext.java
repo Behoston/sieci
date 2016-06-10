@@ -13,10 +13,10 @@ public class AlgorithmContext {
 
     private class AlgorithmIdentifier {
         private Short id;
-        private Byte algorithmId;
+        private Short algorithmId;
 
 
-        AlgorithmIdentifier(Short id, Byte algorithmId) {
+        AlgorithmIdentifier(Short id, Short algorithmId) {
             this.id = id;
             this.algorithmId = algorithmId;
         }
@@ -25,7 +25,7 @@ public class AlgorithmContext {
             return id;
         }
 
-        Byte getAlgorithmId() {
+        Short getAlgorithmId() {
             return algorithmId;
         }
     }
@@ -37,15 +37,15 @@ public class AlgorithmContext {
         this.lock = new ReentrantReadWriteLock();
     }
 
-    public void addAlgorithm(Short id, Byte algorithmId) {
+    public void addAlgorithm(Short id, Short algorithmId) {
         AlgorithmIdentifier algorithmIdentifier = new AlgorithmIdentifier(id, algorithmId);
         this.lock.writeLock().lock();
         identifiers.add(algorithmIdentifier);
         this.lock.writeLock().unlock();
     }
 
-    public Byte identify(Short id) {
-        Byte algorithmId = null;
+    public Short identify(Short id) {
+        Short algorithmId = null;
         lock.readLock().lock();
         for (AlgorithmIdentifier a : identifiers) {
             if (a.getId().equals(id)) {
@@ -54,6 +54,14 @@ public class AlgorithmContext {
         }
         lock.readLock().unlock();
         return algorithmId;
+    }
+
+    public List<Short> getAllIds() {
+        List<Short> result = new ArrayList<>();
+        for (AlgorithmIdentifier ai : identifiers) {
+            result.add(ai.getId());
+        }
+        return result;
     }
 
 

@@ -1,35 +1,32 @@
 package yeti.server;
 
+import yeti.ConnectionLostException;
 import yeti.NotSupportedException;
-import yeti.algo.AlgorithmContext;
-import yeti.algo.results.ResultData;
+import yeti.OverloadException;
 import yeti.messages.*;
-import yeti.utils.YetiInputStreamReader;
+import yeti.utils.YetiServerInputStreamReader;
 
 import java.io.DataInputStream;
-import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.Socket;
 
 public class ClientConnection extends Thread {
     private Socket socket;
     private Yeti yeti;
-    private YetiInputStreamReader yetiInputStreamReader;
-    private AlgorithmContext algorithmContext;
+    private YetiServerInputStreamReader yetiServerInputStreamReader;
     private DataInputStream dataInputStream;
     private ClientOutput clientOutput;
 
     ClientConnection(Socket socket, Yeti yeti) {
         this.socket = socket;
         this.yeti = yeti;
-        this.algorithmContext = new AlgorithmContext();
+        this.clientOutput = new ClientOutput(this.socket);
         try {
             this.dataInputStream = new DataInputStream(socket.getInputStream());
-            this.yetiInputStreamReader = new YetiInputStreamReader(this, algorithmContext);
+            this.yetiServerInputStreamReader = new YetiServerInputStreamReader(this);
         } catch (IOException e) {
             e.printStackTrace();
         }
-        this.clientOutput = new ClientOutput(socket);
     }
 
     public DataInputStream getDataInputStream() {
@@ -45,32 +42,51 @@ public class ClientConnection extends Thread {
         while (true) {
             Communicate communicate;
             try {
-                communicate = yetiInputStreamReader.read();
+                communicate = yetiServerInputStreamReader.read();
             } catch (IOException | NotSupportedException e) {
                 e.printStackTrace();
                 continue;
+            } catch (ConnectionLostException e) {
+                close();
+                return;
             }
 
             if (communicate.getType() == 1) {
                 // Calculate
                 Calculate calculate = (Calculate) communicate;
-                algorithmContext.addAlgorithm(calculate.getId(), calculate.getType());
-                yeti.calculate(calculate.getAlgorithm());
+                try {
+                    yeti.calculate(calculate.getAlgorithm());
+                } catch (OverloadException e) {
+                    clientOutput.sendOverload(new Overload(calculate.getId(), calculate.getPackageId()));
+                }
             } else if (communicate.getType() == 11) {
                 // Cancel
                 Cancel cancel = (Cancel) communicate;
-                yeti.cancel(cancel.getId(), getIp());
+                Cancelled cancelled = yeti.cancel(cancel.getId(), getIp());
+                if (cancelled != null) {
+                    // null znaczy, że jakieś obliczenie jest aktualnie liczone i ono samo wyśle wiadomość
+                    clientOutput.sendCancelled(cancelled);
+                }
             } else if (communicate.getType() == 21) {
                 // PositionQuestion
                 PositionQuestion positionQuestion = (PositionQuestion) communicate;
                 PositionAnswer positionAnswer = yeti.getPosition(positionQuestion.getId(), getIp());
+                clientOutput.sendPosition(positionAnswer);
 
             }
         }
     }
 
-
     public ClientOutput getClientOutput() {
         return clientOutput;
+    }
+
+    public void close() {
+        System.out.println("Connection closed: " + getIp());
+        try {
+            socket.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 }

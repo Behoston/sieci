@@ -1,6 +1,5 @@
 package yeti.algo;
 
-import yeti.InvalidDataException;
 import yeti.algo.results.IsPrimeResultData;
 import yeti.messages.Cancelled;
 import yeti.messages.Error;
@@ -25,24 +24,34 @@ public class IsPrime implements Algorithm {
     private State state;
     private ClientOutput clientOutput;
 
+    /**
+     * @param ip           only required on server side
+     * @param clientOutput only required on server side
+     */
     public IsPrime(Short id, Integer packageId, Integer start, Integer end, Integer number, String ip, ClientOutput clientOutput) {
         this.id = id;
         this.packageId = packageId;
         this.ip = ip;
         this.clientOutput = clientOutput;
         this.start = start;
-        this.end = end;
+        if (this.start <= 2) {
+            this.start = 3;
+        }
         this.number = number;
+        this.end = end;
+        if (this.end >= number) {
+            this.end = number - 1;
+        }
         this.interrupted = false;
         this.state = WAITING;
     }
 
 
     @Override
-    public void run() throws InvalidDataException {
+    public void run() {
         state = CALCULATING;
         result = new IsPrimeResultData(0);
-        for (int i = start; i == end; i++) {
+        for (int i = start; i != end; i++) {
             if (interrupted) {
                 state = CANCELLED;
                 try {
@@ -120,5 +129,20 @@ public class IsPrime implements Algorithm {
         dataOutputStream.writeInt(start);
         dataOutputStream.writeInt(end);
         dataOutputStream.writeInt(number);
+    }
+
+    @Override
+    public String toString() {
+        return "IsPrime{" +
+                "id=" + id +
+                ", packageId=" + packageId +
+                ", start=" + start +
+                ", end=" + end +
+                ", number=" + number +
+                ", ip='" + ip + '\'' +
+                ", interrupted=" + interrupted +
+                ", result=" + result +
+                ", state=" + state +
+                '}';
     }
 }

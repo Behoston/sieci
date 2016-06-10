@@ -7,7 +7,8 @@ import java.net.Socket;
 public class Server {
 
     public static void main(String argv[]) throws Exception {
-        Yeti yeti = new Yeti();
+        Integer power = Integer.parseInt(argv[0]);
+        Yeti yeti = new Yeti(power);
         yeti.start();
         ServerSocket welcomeSocket = new ServerSocket(6454);
 

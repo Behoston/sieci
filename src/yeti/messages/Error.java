@@ -34,4 +34,11 @@ public class Error implements Communicate {
         dataOutputStream.writeInt(packageId);
     }
 
+    @Override
+    public String toString() {
+        return "Error{" +
+                "id=" + id +
+                ", packageId=" + packageId +
+                '}';
+    }
 }

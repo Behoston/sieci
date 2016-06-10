@@ -24,6 +24,13 @@ public class Cancelled implements Communicate {
     @Override
     public void writeToDataOutputStream(DataOutputStream dataOutputStream) throws IOException {
         dataOutputStream.writeByte(TYPE);
+        dataOutputStream.writeShort(id);
+    }
 
+    @Override
+    public String toString() {
+        return "Cancelled{" +
+                "id=" + id +
+                '}';
     }
 }
