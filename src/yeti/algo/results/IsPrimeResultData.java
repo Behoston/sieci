@@ -21,6 +21,21 @@ public class IsPrimeResultData implements ResultData {
     }
 
     @Override
+    public ResultData merge(ResultData resultData) {
+        IsPrimeResultData isPrimeResultData = (IsPrimeResultData) resultData;
+        if (isPrimeResultData.result == 0) {
+            return new IsPrimeResultData(result);
+        } else {
+            return new IsPrimeResultData(isPrimeResultData.result);
+        }
+    }
+
+    @Override
+    public String resultToString() {
+        return result.toString();
+    }
+
+    @Override
     public String toString() {
         return "IsPrimeResultData{" +
                 "result=" + result +

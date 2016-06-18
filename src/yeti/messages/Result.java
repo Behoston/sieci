@@ -18,6 +18,9 @@ public class Result implements Communicate {
         this.resultData = resultData;
     }
 
+    public ResultData getResultData() {
+        return resultData;
+    }
 
     @Override
     public short getId() {

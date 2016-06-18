@@ -24,6 +24,10 @@ public class PositionAnswer implements Communicate {
         return length;
     }
 
+    public Integer getPosition() {
+        return position;
+    }
+
     @Override
     public byte getType() {
         return TYPE;

@@ -6,6 +6,9 @@ import yeti.algo.AlgorithmContext;
 import yeti.algo.IsPrime;
 import yeti.algo.Knapsack;
 import yeti.algo.Sum;
+import yeti.algo.results.IsPrimeResultData;
+import yeti.algo.results.KnapsackResultData;
+import yeti.algo.results.SumResultData;
 import yeti.messages.Calculate;
 import yeti.messages.Cancel;
 import yeti.messages.PositionQuestion;
@@ -19,6 +22,7 @@ import java.util.List;
 
 public class Client extends Thread {
     private AlgorithmContext context;
+    private Integrator integrator;
     private List<String> ips;
     private List<ServerConnection> servers;
     private Short id = 0;
@@ -31,10 +35,11 @@ public class Client extends Thread {
     public Client(List<String> ips) {
         this.ips = ips;
         this.context = new AlgorithmContext();
+        this.integrator = new Integrator();
         this.lastServer = 0;
         this.servers = new ArrayList<>();
         for (String ip : ips) {
-            ServerConnection server = new ServerConnection(ip, this.context);
+            ServerConnection server = new ServerConnection(ip, this.context, this.integrator);
             this.servers.add(server);
             server.start();
         }
@@ -121,6 +126,7 @@ public class Client extends Thread {
             packets++;
         }
 
+
         List<Pair<Integer, Integer>> list = new ArrayList<>();
         for (int i = 0; i != dataLines; i++) {
             String data_line = reader.readLine();
@@ -132,6 +138,7 @@ public class Client extends Thread {
             Integer value = Integer.parseInt(pair[1]);
             list.add(new Pair<>(capacity, value));
         }
+        integrator.setupFinish(packets, id, new KnapsackResultData(0L));
         for (int packageId = 0; packageId != packets; packageId++) {
             Calculate calculate = new Calculate(new Knapsack(id, packageId, null, list, backpack,
                     packageId * step,
@@ -151,6 +158,7 @@ public class Client extends Thread {
             // praktycznie zawsze, bo jeśli nie, to znaczy że nie jest liczbą pierwszą...
             partsForServer++;
         }
+        integrator.setupFinish(partsForServer, id, new IsPrimeResultData(0));
         Integer range_start = 0;
         Integer range_end = range;
         for (int packageId = 0; packageId != partsForServer; packageId++) {
@@ -174,6 +182,7 @@ public class Client extends Thread {
             // zaiwerający resztkę danych
             packets++;
         }
+        integrator.setupFinish(packets, id, new SumResultData(0L));
         for (int packageId = 0; packageId != packets; packageId++) {
             List<Integer> list = new ArrayList<>();
             for (int i = 0; i != linesPerPacket; i++) {
@@ -197,6 +206,7 @@ public class Client extends Thread {
     }
 
     private void status(Short id) {
+        integrator.setupStatus(servers.size(), id);
         for (ServerConnection server : servers) {
             server.sendCommunicate(new PositionQuestion(id));
         }
@@ -204,7 +214,7 @@ public class Client extends Thread {
 
     private void quit() {
         context.getAllIds().forEach(this::cancel);
-        servers.forEach(lambda -> lambda.quit());
+        servers.forEach(ServerConnection::quit);
     }
 
 

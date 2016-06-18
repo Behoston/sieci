@@ -5,4 +5,8 @@ import java.io.IOException;
 
 public interface ResultData {
     void writeResultToDataOutputStream(DataOutputStream dataOutputStream) throws IOException;
+
+    ResultData merge(ResultData resultData);
+
+    String resultToString();
 }

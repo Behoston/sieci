@@ -16,6 +16,17 @@ public class KnapsackResultData implements ResultData {
         dataOutputStream.writeLong(result);
     }
 
+    @Override
+    public ResultData merge(ResultData resultData) {
+        KnapsackResultData other = (KnapsackResultData) resultData;
+        return new KnapsackResultData(this.result + other.result);
+    }
+
+    @Override
+    public String resultToString() {
+        return result.toString();
+    }
+
     public void set(long value) {
         result = value;
     }

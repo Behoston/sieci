@@ -21,6 +21,17 @@ public class SumResultData implements ResultData {
 
     }
 
+    @Override
+    public ResultData merge(ResultData resultData) {
+        SumResultData other = (SumResultData) resultData;
+        return new SumResultData(this.result + other.result);
+    }
+
+    @Override
+    public String resultToString() {
+        return result.toString();
+    }
+
     public boolean add(int i) {
         result += i;
         if (result >= Long.MAX_VALUE) {

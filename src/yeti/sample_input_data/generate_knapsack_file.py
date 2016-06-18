@@ -14,4 +14,4 @@ def generate(lines):
             f.write(str(capacity) + ' ' + str(value) + '\n')
 
 
-generate(10)
+generate(100)

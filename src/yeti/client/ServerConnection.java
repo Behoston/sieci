@@ -3,6 +3,8 @@ package yeti.client;
 import yeti.NotSupportedException;
 import yeti.algo.AlgorithmContext;
 import yeti.messages.Communicate;
+import yeti.messages.PositionAnswer;
+import yeti.messages.Result;
 import yeti.utils.YetiClientInputStreamReader;
 
 import java.io.DataInputStream;
@@ -17,9 +19,11 @@ public class ServerConnection extends Thread {
     private AlgorithmContext context;
     private DataInputStream dataInputStream;
     private DataOutputStream dataOutputStream;
+    private Integrator integrator;
 
-    public ServerConnection(String ip, AlgorithmContext context) {
+    public ServerConnection(String ip, AlgorithmContext context, Integrator integrator) {
         this.context = context;
+        this.integrator = integrator;
         try {
             socket = new Socket(ip, 6454);
             dataInputStream = new DataInputStream(socket.getInputStream());
@@ -51,13 +55,21 @@ public class ServerConnection extends Thread {
         while (true) {
             try {
                 communicate = streamReader.read();
-                System.out.println(communicate);
-            } catch (SocketException closed){
+                if (communicate.getType() == 51) {
+                    // Result
+                    integrator.addResultResponse((Result) communicate);
+                } else if (communicate.getType() == 61) {
+                    // PositionAnswer
+                    integrator.addStatusResponse((PositionAnswer) communicate, getServerIp());
+                } else {
+                    // Other communicate
+                    System.out.println(communicate);
+                }
+            } catch (SocketException closed) {
                 break;
             } catch (IOException | NotSupportedException e) {
                 e.printStackTrace();
             }
-            // TODO: 10.06.16 tutaj trzeba rozpoznawać komunikaty i przekazywać je do sklejania
         }
     }
 
