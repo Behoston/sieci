@@ -8,7 +8,7 @@ def generate(lines):
         f.write('SUM\n')
         f.write(str(lines) + '\n')
         for _ in xrange(lines):
-            random_number = randint(0, 10**9)
+            random_number = randint(0, 10 ** 9)
             sum += random_number
             f.write(str(random_number) + '\n')
     print 'Sum  should be:', sum

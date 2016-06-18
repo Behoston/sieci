@@ -43,7 +43,9 @@ public class ClientConnection extends Thread {
             Communicate communicate;
             try {
                 communicate = yetiServerInputStreamReader.read();
-            } catch (IOException | NotSupportedException e) {
+            } catch (IOException e) {
+                return;
+            } catch (NotSupportedException e) {
                 e.printStackTrace();
                 continue;
             } catch (ConnectionLostException e) {

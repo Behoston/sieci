@@ -20,6 +20,8 @@ public class Knapsack implements Algorithm {
     private String ip;
     private List<Pair<Integer, Integer>> objects;
     private Integer capacity;
+    private Long start;
+    private Long end;
     private ClientOutput clientOutput;
     private Boolean interrupted;
     private KnapsackResultData result;
@@ -30,12 +32,14 @@ public class Knapsack implements Algorithm {
      * @param clientOutput only required on server side
      */
     public Knapsack(Short id, Integer packageId, String ip, List<Pair<Integer, Integer>> objects, Integer capacity,
-                    ClientOutput clientOutput) {
+                    Long start, Long end, ClientOutput clientOutput) {
         this.id = id;
         this.packageId = packageId;
         this.ip = ip;
         this.objects = objects;
         this.capacity = capacity;
+        this.end = end;
+        this.start = start;
         this.clientOutput = clientOutput;
         this.interrupted = false;
         this.state = WAITING;
@@ -46,11 +50,10 @@ public class Knapsack implements Algorithm {
     public void run() {
         result = new KnapsackResultData(0L);
         state = CALCULATING;
-        Long combination_number = 0L;
+        Long combination_number = start;
         int dataLength = objects.size();
-        Long last_combination_number = (long) Math.pow(2, dataLength) - 1;
         Boolean[] combination;
-        for (; combination_number <= last_combination_number; combination_number++) {
+        for (; combination_number <= end; combination_number++) {
             if (interruptionCheck()) {
                 state = CANCELLED;
                 try {
@@ -144,7 +147,7 @@ public class Knapsack implements Algorithm {
 
 
     private long getDataLength() {
-        return (objects.size() * 2 + 1) * Integer.BYTES;
+        return (objects.size() * 2 + 1) * Integer.BYTES + 2 * Long.BYTES;
     }
 
     @Override
@@ -161,6 +164,8 @@ public class Knapsack implements Algorithm {
             dataOutputStream.writeInt(p.getValue());
         }
         dataOutputStream.writeInt(capacity);
+        dataOutputStream.writeLong(start);
+        dataOutputStream.writeLong(end);
     }
 
     @Override

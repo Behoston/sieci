@@ -23,7 +23,7 @@ public class ClientOutput {
         try {
             communicate.writeToDataOutputStream(dataOutputStream);
         } catch (IOException e) {
-            e.printStackTrace();
+            return;
         }
     }
 

@@ -1,6 +1,6 @@
 # coding=utf8
-from random import randint
 import math
+from random import randint
 
 
 def is_prime(n):

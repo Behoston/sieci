@@ -1,7 +1,5 @@
 package yeti.algo;
 
-import yeti.InvalidDataException;
-
 import java.io.DataOutputStream;
 import java.io.IOException;
 

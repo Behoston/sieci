@@ -56,7 +56,7 @@ public class Yeti extends Thread {
         if (actual != null && ip.equals(actual.getIp()) && actual.getId() == id) {
             actual.interrupt();
             return null;
-        } else{
+        } else {
             return new Cancelled(id);
         }
 

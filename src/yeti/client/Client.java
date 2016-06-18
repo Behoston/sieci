@@ -48,7 +48,7 @@ public class Client extends Thread {
                 request = inFromUser.readLine();
                 parseRequest(request);
             } catch (IOException e) {
-                e.printStackTrace();
+                return;
             }
         }
     }
@@ -114,25 +114,29 @@ public class Client extends Thread {
         Integer backpack = Integer.parseInt(reader.readLine());
         Integer dataLines = Integer.parseInt(reader.readLine());
 
-        Integer linesPerPacket = dataLines / packets;
-        if (dataLines % packets != 0) {
-            // kiedy ilość linii jest niepodzielna dodaje jeden pakiet
-            // zaiwerający resztkę danych
+        long configurations = (long) Math.pow(2, dataLines);
+        long step = configurations / packets;
+        if (configurations % packets != 0) {
+            // kiedy ilość konfiguracji jest niepodzialna to resztka danych musi iść w dodakowym pakiecie
             packets++;
         }
-        for (int packageId = 0; packageId != packets; packageId++) {
-            List<Pair<Integer, Integer>> list = new ArrayList<>();
-            for (int i = 0; i != linesPerPacket; i++) {
-                String data_line = reader.readLine();
-                if (data_line == null) {
-                    break;
-                }
-                String[] pair = data_line.split(" ");
-                Integer capacity = Integer.parseInt(pair[0]);
-                Integer value = Integer.parseInt(pair[1]);
-                list.add(new Pair<>(capacity, value));
+
+        List<Pair<Integer, Integer>> list = new ArrayList<>();
+        for (int i = 0; i != dataLines; i++) {
+            String data_line = reader.readLine();
+            if (data_line == null) {
+                break;
             }
-            Calculate calculate = new Calculate(new Knapsack(id, packageId, null, list, backpack, null));
+            String[] pair = data_line.split(" ");
+            Integer capacity = Integer.parseInt(pair[0]);
+            Integer value = Integer.parseInt(pair[1]);
+            list.add(new Pair<>(capacity, value));
+        }
+        for (int packageId = 0; packageId != packets; packageId++) {
+            Calculate calculate = new Calculate(new Knapsack(id, packageId, null, list, backpack,
+                    packageId * step,
+                    (packageId + 1) * step - 1,
+                    null));
             ServerConnection server = getNextServer();
             server.sendCommunicate(calculate);
         }
@@ -200,6 +204,7 @@ public class Client extends Thread {
 
     private void quit() {
         context.getAllIds().forEach(this::cancel);
+        servers.forEach(lambda -> lambda.quit());
     }
 
 

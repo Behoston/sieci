@@ -35,11 +35,14 @@ public class AlgorithmResolver {
         } else if (algorithmID == 2) {
             // Knapsack
             List<Pair<Integer, Integer>> objects = new ArrayList<>();
+            dataLength = dataLength - 2 * Long.BYTES;
             for (long i = 0; i != ((dataLength / Integer.BYTES - 1) / 2); i++) {
                 objects.add(new Pair<>(inputStream.readInt(), inputStream.readInt()));
             }
             Integer capacity = inputStream.readInt();
-            return new Knapsack(id, packageId, ip, objects, capacity, clientOutput);
+            Long start = inputStream.readLong();
+            Long end = inputStream.readLong();
+            return new Knapsack(id, packageId, ip, objects, capacity, start, end, clientOutput);
         } else if (algorithmID == 3) {
             // IsPrime
             Integer start = inputStream.readInt();

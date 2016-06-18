@@ -9,6 +9,7 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.Socket;
+import java.net.SocketException;
 
 public class ServerConnection extends Thread {
 
@@ -30,12 +31,12 @@ public class ServerConnection extends Thread {
 
     }
 
-    public String getServerIp(){
+    public String getServerIp() {
         return socket.getInetAddress().getHostAddress();
     }
 
 
-    public void sendCommunicate(Communicate communicate){
+    public void sendCommunicate(Communicate communicate) {
         try {
             communicate.writeToDataOutputStream(dataOutputStream);
         } catch (IOException e) {
@@ -47,11 +48,12 @@ public class ServerConnection extends Thread {
     public void run() {
         YetiClientInputStreamReader streamReader = new YetiClientInputStreamReader(dataInputStream, context);
         Communicate communicate;
-        //noinspection InfiniteLoopStatement
         while (true) {
             try {
                 communicate = streamReader.read();
                 System.out.println(communicate);
+            } catch (SocketException closed){
+                break;
             } catch (IOException | NotSupportedException e) {
                 e.printStackTrace();
             }
@@ -59,4 +61,10 @@ public class ServerConnection extends Thread {
         }
     }
 
+    public void quit() {
+        try {
+            socket.close();
+        } catch (IOException ignored) {
+        }
+    }
 }
