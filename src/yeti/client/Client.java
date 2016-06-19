@@ -98,11 +98,11 @@ public class Client extends Thread {
         try {
             BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(file)));
             algorithm_line = reader.readLine();
-            if (algorithm_line.startsWith("SUM")) {
+            if (algorithm_line.toUpperCase().startsWith("SUM")) {
                 parseSum(id, packets, reader);
-            } else if (algorithm_line.startsWith("ISPRIME")) {
+            } else if (algorithm_line.toUpperCase().startsWith("ISPRIME")) {
                 parseIsPrime(partsForServer, id, reader);
-            } else if (algorithm_line.startsWith("KNAPSACK")) {
+            } else if (algorithm_line.toUpperCase().startsWith("KNAPSACK")) {
                 parseKnapsack(id, packets, reader);
 
             } else {
@@ -150,11 +150,13 @@ public class Client extends Thread {
     }
 
     private void parseIsPrime(Integer partsForServer, Short id, BufferedReader reader) throws IOException {
-        // FIXME: 10.06.16 poprawić dzielenie na mniejsze pakiety
         context.addAlgorithm(id, IS_PRIME);
+        reader.readLine(); // zawsze równe 1 bo mamy jedną linię do zczytania z pliku dalej
         Integer number = Integer.parseInt(reader.readLine());
-        Integer range = number / partsForServer;
-        if (number % partsForServer != 0) {
+        Integer end = (int) Math.sqrt(number) + 1;
+        Integer parts = partsForServer * servers.size();
+        Integer range = end / parts;
+        if (end % parts != 0) {
             // praktycznie zawsze, bo jeśli nie, to znaczy że nie jest liczbą pierwszą...
             partsForServer++;
         }

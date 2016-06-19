@@ -1,6 +1,7 @@
 package tcp.server;
 
-import java.net.*;
+import java.net.ServerSocket;
+import java.net.Socket;
 
 class TCPServer {
     public static void main(String argv[]) throws Exception {

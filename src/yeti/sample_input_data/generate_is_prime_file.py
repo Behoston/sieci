@@ -13,6 +13,7 @@ def generate():
     random_number = randint(0, 2147483647)
     with open('is_prime', 'w') as f:
         f.write('ISPRIME\n')
+        f.write('1\n')
         f.write(str(random_number) + '\n')
     if is_prime(random_number):
         print random_numer, 'is prime number'

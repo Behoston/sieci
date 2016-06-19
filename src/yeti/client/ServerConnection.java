@@ -9,6 +9,7 @@ import yeti.utils.YetiClientInputStreamReader;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
+import java.io.EOFException;
 import java.io.IOException;
 import java.net.Socket;
 import java.net.SocketException;
@@ -65,7 +66,7 @@ public class ServerConnection extends Thread {
                     // Other communicate
                     System.out.println(communicate);
                 }
-            } catch (SocketException closed) {
+            } catch (SocketException | EOFException closed) {
                 break;
             } catch (IOException | NotSupportedException e) {
                 e.printStackTrace();
