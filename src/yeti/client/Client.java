@@ -153,25 +153,27 @@ public class Client extends Thread {
         context.addAlgorithm(id, IS_PRIME);
         reader.readLine(); // zawsze równe 1 bo mamy jedną linię do zczytania z pliku dalej
         Integer number = Integer.parseInt(reader.readLine());
-        Integer end = (int) Math.sqrt(number) + 1;
         Integer parts = partsForServer * servers.size();
-        Integer range = end / parts;
-        if (end % parts != 0) {
-            // praktycznie zawsze, bo jeśli nie, to znaczy że nie jest liczbą pierwszą...
-            partsForServer++;
-        }
+        Integer end = (int) Math.ceil(Math.sqrt(number));
+        Integer range = (end - 2) / parts;
+        Integer rest = (end - 2) % parts;
         integrator.setupFinish(partsForServer, id, new IsPrimeResultData(0));
-        Integer range_start = 0;
-        Integer range_end = range;
+        Integer range_start = 2;
+        Integer range_end;
         for (int packageId = 0; packageId != partsForServer; packageId++) {
+            range_end = range_start + range;
+            // Kiedy ilość danych jest niepodzielna równo to dodaje 1 do zakresu dla pierwszych x paczek
+            if (rest > 0 && range != 0) {
+                range_end++;
+                rest--;
+            }
+            if (range_end > end) {
+                range_end = end;
+            }
             Calculate calculate = new Calculate(new IsPrime(id, packageId, range_start, range_end, number, null, null));
             ServerConnection server = getNextServer();
             server.sendCommunicate(calculate);
-            range_start = range_end;
-            range_end += range;
-            if (range_end > number) {
-                range_end = number;
-            }
+            range_start = range_end + 1;
         }
     }
 
@@ -179,15 +181,22 @@ public class Client extends Thread {
         context.addAlgorithm(id, SUM);
         Integer dataLines = Integer.parseInt(reader.readLine());
         Integer linesPerPacket = dataLines / packets;
-        if (dataLines % packets != 0) {
-            // kiedy ilość linii jest niepodzielna dodaje jeden pakiet
-            // zaiwerający resztkę danych
-            packets++;
-        }
+        Integer rest = dataLines % packets;
         integrator.setupFinish(packets, id, new SumResultData(0L));
         for (int packageId = 0; packageId != packets; packageId++) {
             List<Integer> list = new ArrayList<>();
             for (int i = 0; i != linesPerPacket; i++) {
+                String data_line = reader.readLine();
+                if (data_line == null) {
+                    break;
+                }
+                int number = Integer.parseInt(data_line);
+                list.add(number);
+            }
+            // kiedy danych nie da się podzielić po równo, do pierwszych x pakietów
+            // dodaję o jedno miejsce więcej
+            if (rest > 0) {
+                rest--;
                 String data_line = reader.readLine();
                 if (data_line == null) {
                     break;

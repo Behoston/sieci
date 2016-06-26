@@ -51,7 +51,7 @@ public class IsPrime implements Algorithm {
     public void run() {
         state = CALCULATING;
         result = new IsPrimeResultData(0);
-        for (int i = start; i != end; i++) {
+        for (int i = start; i <= end; i++) {
             if (interrupted) {
                 state = CANCELLED;
                 try {
@@ -61,7 +61,7 @@ public class IsPrime implements Algorithm {
                 }
                 return;
             }
-            if (number % i == 0) {
+            if ((number % i) == 0) {
                 result.setResult(i);
                 break;
             }
