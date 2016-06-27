@@ -14,4 +14,4 @@ def generate(lines):
     print 'Sum  should be:', sum
 
 
-generate(5000)
+generate(10)

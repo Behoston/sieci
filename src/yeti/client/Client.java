@@ -111,20 +111,17 @@ public class Client extends Thread {
         } catch (IOException | NotSupportedException e) {
             e.printStackTrace();
         }
-
     }
 
     private void parseKnapsack(Short id, Integer packets, BufferedReader reader) throws IOException {
         context.addAlgorithm(id, KNAPSACK);
-        Integer backpack = Integer.parseInt(reader.readLine());
+        Integer backpackCapacity = Integer.parseInt(reader.readLine());
         Integer dataLines = Integer.parseInt(reader.readLine());
 
         long configurations = (long) Math.pow(2, dataLines);
+        System.out.println("Configurations: " + configurations);
         long step = configurations / packets;
-        if (configurations % packets != 0) {
-            // kiedy ilość konfiguracji jest niepodzialna to resztka danych musi iść w dodakowym pakiecie
-            packets++;
-        }
+        long rest = configurations % packets;
 
 
         List<Pair<Integer, Integer>> list = new ArrayList<>();
@@ -139,13 +136,26 @@ public class Client extends Thread {
             list.add(new Pair<>(capacity, value));
         }
         integrator.setupFinish(packets, id, new KnapsackResultData(0L));
+        long start = 0;
+        long end;
         for (int packageId = 0; packageId != packets; packageId++) {
-            Calculate calculate = new Calculate(new Knapsack(id, packageId, null, list, backpack,
-                    packageId * step,
-                    (packageId + 1) * step - 1,
-                    null));
+            end = start + step;
+            // jeśli nie da się równo podzielić to kilka pierwszych pakietów zawiera o 1 konfigurację więcej
+
+            if (rest != 0) {
+                end++;
+                rest--;
+            }
+            if (end > configurations - 1) {
+                end = configurations - 1;
+            }
+            System.out.println("Start: " + start);
+            System.out.println("End: " + end);
+            Knapsack knapsack = new Knapsack(id, packageId, null, list, backpackCapacity, start, end, null);
+            Calculate calculate = new Calculate(knapsack);
             ServerConnection server = getNextServer();
             server.sendCommunicate(calculate);
+            start = end + 1;
         }
     }
 

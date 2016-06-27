@@ -3,6 +3,8 @@ package yeti.algo.results;
 import java.io.DataOutputStream;
 import java.io.IOException;
 
+import static java.lang.Math.max;
+
 public class KnapsackResultData implements ResultData {
     private Long result;
 
@@ -19,7 +21,7 @@ public class KnapsackResultData implements ResultData {
     @Override
     public ResultData merge(ResultData resultData) {
         KnapsackResultData other = (KnapsackResultData) resultData;
-        return new KnapsackResultData(this.result + other.result);
+        return new KnapsackResultData(max(this.result, other.result));
     }
 
     @Override
